@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/backend/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          pip install -r backend/requirements.txt
+
+      - name: Run flake8
+        run: |
+          pip install flake8
+          flake8 --max-line-length=120 || true
+
+      - name: Run tests
+        run: |
+          pytest backend
+
+      - name: Build docker image (validate build)
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: backend/Dockerfile
+          push: false
+          tags: cyber-ia:local
+
+  codeql:
+    name: CodeQL Scan
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: python
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+      - name: Run CodeQL
+        uses: github/codeql-action/analyze@v2
