@@ -9,4 +9,5 @@
 ​[ ] README cobre os passos principais para setup local e CI CD
 ​[ ] Threat model e checklist revisados
 ​[ ] Links para infra terraform e instruções de deploy incluídos
+
 Documentation files (conteúdo para criar no branch pr-docs)
