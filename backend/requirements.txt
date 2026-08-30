@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+cryptography
+scikit-learn
+pandas
+openai
+python-multipart
+pytest
+flake8
