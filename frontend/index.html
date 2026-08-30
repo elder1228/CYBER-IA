@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CYBER-IA Dashboard</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>CYBER-IA — Dashboard POC</h1>
+  </header>
+
+  <main class="grid">
+    <section class="card">
+      <h2>Chaves</h2>
+      <button id="btn-gen-key">Gerar chave (API)</button>
+      <pre id="key-output"></pre>
+    </section>
+
+    <section class="card">
+      <h2>Cifrar / Decifrar</h2>
+      <input id="file-input" type="file" />
+      <button id="btn-encrypt">Encrypt file</button>
+      <div id="encrypt-result"></div>
+      <hr />
+      <input id="decrypt-key" placeholder="Chave (base64)" />
+      <input id="decrypt-filename" placeholder="Nome do ficheiro .enc" />
+      <button id="btn-decrypt">Decrypt</button>
+      <pre id="decrypt-result"></pre>
+    </section>
+
+    <section class="card">
+      <h2>Logs / Análise</h2>
+      <textarea id="logs" rows="6" placeholder="Cole logs aqui..."></textarea>
+      <button id="btn-upload-logs">Enviar logs</button>
+      <button id="btn-analyze">Analisar</button>
+      <pre id="analysis-result"></pre>
+    </section>
+
+    <section class="card">
+      <h2>Assistente IA</h2>
+      <textarea id="prompt" rows="4" placeholder="Pergunte ao assistente..."></textarea>
+      <button id="btn-chat">Enviar</button>
+      <pre id="chat-response"></pre>
+    </section>
+  </main>
+
+  <script src="./script.js"></script>
+</body>
+</html>
