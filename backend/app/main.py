@@ -1,13 +1,19 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 import os
 from .crypto import generate_key, encrypt_bytes, decrypt_bytes
 from .ai_adapter import analyze_text, chat_with_assistant
 from sklearn.ensemble import IsolationForest
-import joblib
 import uuid
 
 app = FastAPI(title="CYBER-IA API")
+
+# Serve frontend static files
+STATIC_DIR = os.path.join(os.path.dirname(__file__), '..', '..', 'frontend')
+if os.path.exists(STATIC_DIR):
+    app.mount('/', StaticFiles(directory=STATIC_DIR, html=True), name='frontend')
+
 DATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'data')
 if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)
