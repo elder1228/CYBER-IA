@@ -1,51 +1,374 @@
-<!doctype html>
-<html lang="pt-BR">
+<!DOCTYPE html>
+<html lang="pt-BR"> 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>CYBER-IA Dashboard</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CYBER-IA · SOC Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --bg: #08080c;
+      --text: #ffffff;
+      --text-muted: #9ca3af;
+      --panel: rgba(18, 18, 26, 0.72);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --soft: rgba(255, 255, 255, 0.04);
+      --soft-border: rgba(255, 255, 255, 0.10);
+      --input-bg: rgba(0, 0, 0, 0.45);
+      --shadow: rgba(168, 85, 247, 0.35);
+      --console-bg: rgba(0, 0, 0, 0.72);
+      --thumb-grad: linear-gradient(135deg, #c084fc, #22d3ee);
+      --danger: rgba(239, 68, 68, 0.8);
+      --warning: rgba(245, 158, 11, 0.8);
+      --success: rgba(16, 185, 129, 0.8);
+    }
+
+    body.theme-light {
+      --bg: #eef1f6;
+      --text: #111827;
+      --text-muted: #6b7280;
+      --panel: rgba(255, 255, 255, 0.88);
+      --panel-border: rgba(15, 23, 42, 0.10);
+      --soft: rgba(15, 23, 42, 0.04);
+      --soft-border: rgba(15, 23, 42, 0.10);
+      --input-bg: rgba(255, 255, 255, 0.95);
+      --shadow: rgba(168, 85, 247, 0.22);
+      --console-bg: rgba(17, 24, 39, 0.95);
+      --thumb-grad: linear-gradient(135deg, #a855f7, #06b6d4);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      transition: background-color .25s ease, color .25s ease;
+    }
+
+    .glass-panel {
+      background: var(--panel);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--panel-border);
+      border-radius: 1.5rem;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.02);
+      transition: background .25s ease, border-color .25s ease;
+    }
+
+    .glass-btn {
+      transition: all .2s ease;
+      border: 1px solid var(--soft-border);
+      background: var(--soft);
+      color: var(--text);
+    }
+
+    .glass-btn:hover {
+      box-shadow: 0 0 15px var(--shadow);
+      border-color: rgba(168, 85, 247, 0.55);
+      transform: translateY(-1px);
+    }
+
+    .tool-card {
+      background: var(--soft);
+      border: 1px solid var(--soft-border);
+      border-radius: 1rem;
+      padding: .85rem .45rem;
+      text-align: center;
+      transition: .2s ease;
+      cursor: pointer;
+      color: var(--text);
+    }
+
+    .tool-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(168, 85, 247, 0.45);
+      box-shadow: 0 0 18px rgba(168, 85, 247, 0.18);
+    }
+
+    .tool-icon { font-size: 1.2rem; margin-bottom: .3rem; }
+    .tool-label { font-size: 10px; color: var(--text-muted); line-height: 1.2; }
+    .muted { color: var(--text-muted); }
+
+    .title-grad {
+      background: linear-gradient(to right, #c084fc, #22d3ee, #34d399);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .theme-wrap { display: flex; align-items: center; gap: .55rem; user-select: none; }
+    .theme-label { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-muted); font-weight: 700; }
+
+    .theme-switch {
+      width: 64px; height: 28px; border-radius: 999px;
+      background: rgba(0,0,0,.35); border: 1px solid var(--soft-border);
+      padding: 3px; display: flex; align-items: center; cursor: pointer; position: relative;
+    }
+    body.theme-light .theme-switch { background: rgba(255,255,255,.9); }
+    .theme-switch .side { position: absolute; top: 50%; transform: translateY(-50%); font-size: 10px; opacity: .55; pointer-events: none; }
+    .theme-switch .side.left { left: 8px; }
+    .theme-switch .side.right { right: 8px; }
+    .theme-thumb {
+      width: 22px; height: 22px; border-radius: 999px;
+      background: var(--thumb-grad); box-shadow: 0 2px 10px rgba(0,0,0,.35);
+      transform: translateX(0); transition: transform .28s cubic-bezier(.2,.8,.2,1); z-index: 2;
+    }
+    body.theme-light .theme-thumb { transform: translateX(36px); }
+
+    .console { background: var(--console-bg); color: #d1d5db; }
+    select, input[type="text"], input[type="password"], textarea {
+      background: var(--input-bg); color: var(--text); border: 1px solid var(--soft-border);
+    }
+
+    .status-pill {
+      display: inline-flex; align-items: center; gap: .4rem; font-size: 10px;
+      padding: .25rem .55rem; border-radius: 999px; border: 1px solid var(--soft-border);
+      background: var(--soft); color: var(--text-muted);
+    }
+
+    .metric-card {
+      background: var(--soft); border: 1px solid var(--soft-border); border-radius: 1rem;
+      padding: 1rem; transition: .2s ease;
+    }
+    
+    .severity-bar { height: 6px; border-radius: 99px; background: var(--soft-border); overflow: hidden; }
+    .severity-bar > div { height: 100%; border-radius: 99px; }
+
+    .scroll-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+    .scroll-thin::-webkit-scrollbar-thumb { background: rgba(168,85,247,.35); border-radius: 99px; }
+  </style>
 </head>
-<body>
-  <header class="topbar">
-    <h1>CYBER-IA — Dashboard POC</h1>
+<body class="h-screen w-screen flex flex-col overflow-hidden select-none">
+
+  <!-- HEADER -->
+  <header class="h-16 mx-4 mt-4 px-5 flex items-center justify-between glass-panel z-20">
+    <div class="flex items-center gap-3 min-w-0">
+      <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+      <h1 class="text-xl font-bold tracking-wider title-grad truncate">
+        CYBER-IA <span class="text-xs font-normal font-mono muted">SOC COMMAND</span>
+      </h1>
+      <span class="status-pill hidden sm:inline-flex">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        All systems operational
+      </span>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div class="theme-wrap" title="Esquerda: Escuro · Direita: Claro">
+        <span class="theme-label">Tema</span>
+        <div id="theme-switch" class="theme-switch" role="switch" aria-checked="false" tabindex="0">
+          <span class="side left">🌑</span>
+          <span class="side right">☀️</span>
+          <div class="theme-thumb"></div>
+        </div>
+      </div>
+
+      <button class="glass-btn px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2">
+        <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        Exportar
+      </button>
+    </div>
   </header>
 
-  <main class="grid">
-    <section class="card">
-      <h2>Chaves</h2>
-      <button id="btn-gen-key">Gerar chave (API)</button>
-      <pre id="key-output"></pre>
+  <!-- MAIN CONTENT -->
+  <div class="flex-1 flex overflow-hidden p-4 gap-4 min-h-0">
+
+    <!-- LEFT COLUMN (2/3) -->
+    <section class="w-2/3 flex flex-col gap-4 min-w-0 min-h-0">
+
+      <!-- Top Panel: Overview & Metrics -->
+      <div class="flex-1 glass-panel p-5 flex flex-col min-h-0 overflow-y-auto scroll-thin">
+        <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+          <div>
+            <span class="text-xs font-semibold uppercase tracking-wider muted">Security Operations</span>
+            <h2 class="text-lg font-bold">Security Overview</h2>
+          </div>
+          <div class="flex gap-2">
+            <button class="glass-btn text-xs px-3 py-1 rounded-lg bg-purple-500/20 border-purple-500/40 text-purple-200">24h</button>
+            <button class="glass-btn text-xs px-3 py-1 rounded-lg">7 dias</button>
+            <button class="glass-btn text-xs px-3 py-1 rounded-lg">30 dias</button>
+          </div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="grid grid-cols-4 gap-3 mb-5">
+          <div class="metric-card">
+            <small class="text-[10px] uppercase tracking-wider text-red-400 font-bold">Alertas Críticos</small>
+            <strong class="text-2xl block my-1">7</strong>
+            <span class="text-[10px] text-red-300">+2 nas últimas 24h</span>
+          </div>
+          <div class="metric-card">
+            <small class="text-[10px] uppercase tracking-wider text-yellow-400 font-bold">Ameaças Ativas</small>
+            <strong class="text-2xl block my-1">23</strong>
+            <span class="text-[10px] text-yellow-300">8% menos que ontem</span>
+          </div>
+          <div class="metric-card">
+            <small class="text-[10px] uppercase tracking-wider text-cyan-400 font-bold">Eventos Analisados</small>
+            <strong class="text-2xl block my-1">18.4K</strong>
+            <span class="text-[10px] text-cyan-300">98.7% classificados</span>
+          </div>
+          <div class="metric-card">
+            <small class="text-[10px] uppercase tracking-wider text-emerald-400 font-bold">Confiança IA</small>
+            <strong class="text-2xl block my-1">96.2%</strong>
+            <span class="text-[10px] text-emerald-300">+1.4% esta semana</span>
+          </div>
+        </div>
+
+        <!-- Risk & Severity -->
+        <div class="grid grid-cols-2 gap-4 flex-1">
+          <div class="glass-panel p-4 flex flex-col items-center justify-center" style="background: var(--console-bg);">
+            <div class="w-24 h-24 rounded-full border-4 border-red-500/50 flex items-center justify-center mb-2 relative">
+              <span class="text-3xl font-bold text-red-400">72</span>
+              <span class="absolute -bottom-1 text-[10px] bg-red-500/20 px-2 rounded-full text-red-300">/100</span>
+            </div>
+            <span class="text-xs uppercase tracking-wider muted">Risk Score</span>
+            <strong class="text-red-400 text-sm">Elevated</strong>
+          </div>
+          <div class="glass-panel p-4 flex flex-col justify-center gap-3" style="background: var(--console-bg);">
+            <span class="text-xs uppercase tracking-wider muted mb-1">Distribuição de Severidade</span>
+            <div class="space-y-2">
+              <div>
+                <div class="flex justify-between text-[11px] mb-1"><span>Critical</span><b>7</b></div>
+                <div class="severity-bar"><div style="width:22%; background: var(--danger);"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-[11px] mb-1"><span>High</span><b>16</b></div>
+                <div class="severity-bar"><div style="width:48%; background: var(--warning);"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-[11px] mb-1"><span>Medium</span><b>31</b></div>
+                <div class="severity-bar"><div style="width:72%; background: #3b82f6;"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-[11px] mb-1"><span>Low</span><b>54</b></div>
+                <div class="severity-bar"><div style="width:92%; background: var(--success);"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Panel: AI Copilot & Live Stream -->
+      <div class="h-52 glass-panel p-4 flex flex-col font-mono text-xs min-h-0">
+        <div class="flex justify-between items-center mb-2 pb-2" style="border-bottom: 1px solid var(--soft-border);">
+          <div class="flex items-center gap-2">
+            <span class="font-sans font-semibold muted">Cyber Copilot & Live Stream</span>
+            <span class="status-pill"><span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span> AI ONLINE</span>
+          </div>
+          <button onclick="document.getElementById('ai-console').innerHTML = ''" class="px-2 py-0.5 rounded text-[10px] glass-btn">LIMPAR</button>
+        </div>
+        <div id="ai-console" class="flex-1 console rounded-xl p-3 overflow-y-auto scroll-thin text-[11px] leading-relaxed">
+          <p class="text-purple-300">[AI]: Correlação detectada entre falhas de autenticação e atividade suspeita no Endpoint-042.</p>
+          <p class="text-gray-400">[EVENT]: 10.24.18.7 tentou acesso não autorizado (Critical) - 14:02:11</p>
+          <p class="text-gray-400">[EVENT]: Varredura de portas detectada na subnet 192.168.1.0/24 - 14:01:45</p>
+          <p class="text-cyan-300">[AI]: Prioridade de investigação recomendada para o IP 10.24.18.7.</p>
+          <p class="text-gray-500">[System]: Aguardando novos eventos ou comandos...</p>
+        </div>
+        <form class="mt-2 flex gap-2" onsubmit="event.preventDefault();">
+          <input type="text" placeholder="Pergunte ao Cyber Copilot..." class="flex-1 rounded-lg px-3 py-1.5 text-xs focus:outline-none">
+          <button class="glass-btn px-4 py-1.5 rounded-lg text-xs font-semibold text-purple-300">➤ Enviar</button>
+        </form>
+      </div>
     </section>
 
-    <section class="card">
-      <h2>Cifrar / Decifrar</h2>
-      <input id="file-input" type="file" />
-      <button id="btn-encrypt">Encrypt file</button>
-      <div id="encrypt-result"></div>
-      <hr />
-      <input id="decrypt-key" placeholder="Chave (base64)" />
-      <input id="decrypt-filename" placeholder="Nome do ficheiro .enc" />
-      <button id="btn-decrypt">Decrypt</button>
-      <pre id="decrypt-result"></pre>
-    </section>
+    <!-- RIGHT COLUMN (1/3) -->
+    <section class="w-1/3 flex flex-col gap-4 min-w-0 min-h-0 overflow-y-auto scroll-thin pr-1">
 
-    <section class="card">
-      <h2>Logs / Análise</h2>
-      <textarea id="logs" rows="6" placeholder="Cole logs aqui..."></textarea>
-      <button id="btn-upload-logs">Enviar logs</button>
-      <button id="btn-analyze">Analisar</button>
-      <pre id="analysis-result"></pre>
-    </section>
+      <!-- Config & Filters -->
+      <div class="glass-panel p-4 flex flex-col gap-3">
+        <h2 class="text-xs font-semibold uppercase tracking-wider muted">Filtros & Configuração</h2>
+        <div>
+          <label class="text-[11px] muted mb-1 block">Severidade:</label>
+          <select class="w-full rounded-lg px-2 py-1.5 text-xs focus:outline-none">
+            <option>Todas as severidades</option>
+            <option>CRITICAL</option>
+            <option>HIGH</option>
+            <option>MEDIUM</option>
+            <option>LOW</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[11px] muted mb-1 block">Status da Ameaça:</label>
+          <select class="w-full rounded-lg px-2 py-1.5 text-xs focus:outline-none">
+            <option>Todos os status</option>
+            <option>NEW</option>
+            <option>INVESTIGATING</option>
+            <option>RESOLVED</option>
+          </select>
+        </div>
+      </div>
 
-    <section class="card">
-      <h2>Assistente IA</h2>
-      <textarea id="prompt" rows="4" placeholder="Pergunte ao assistente..."></textarea>
-      <button id="btn-chat">Enviar</button>
-      <pre id="chat-response"></pre>
-    </section>
-  </main>
+      <!-- SOC Toolbox -->
+      <div class="glass-panel p-4">
+        <div class="flex items-center justify-between mb-3 gap-2">
+          <div>
+            <h2 class="text-sm font-semibold">Módulos SOC</h2>
+            <p class="text-[11px] muted">Acesso rápido às ferramentas</p>
+          </div>
+          <span class="status-pill">v2.0</span>
+        </div>
 
-  <script src="./script.js"></script>
+        <p class="text-[10px] uppercase tracking-widest muted mb-2">Análise & Resposta</p>
+        <div class="grid grid-cols-2 gap-2 mb-4">
+          <button class="tool-card" onclick="console.log('Abrindo Threats')">
+            <div class="tool-icon">⚠️</div>
+            <div class="tool-label">Threat Intel</div>
+          </button>
+          <button class="tool-card" onclick="console.log('Abrindo Timeline')">
+            <div class="tool-icon">◷</div>
+            <div class="tool-label">Event Timeline</div>
+          </button>
+          <button class="tool-card" onclick="console.log('Abrindo Logs')">
+            <div class="tool-icon">▤</div>
+            <div class="tool-label">Log Analyzer</div>
+          </button>
+          <button class="tool-card" onclick="console.log('Abrindo Crypto')">
+            <div class="tool-icon">⌁</div>
+            <div class="tool-label">Criptografia</div>
+          </button>
+        </div>
+
+        <p class="text-[10px] uppercase tracking-widest muted mb-2">Sistema & IA</p>
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <button class="tool-card" onclick="console.log('Abrindo AI')">
+            <div class="tool-icon">✦</div>
+            <div class="tool-label">AI Analysis</div>
+          </button>
+          <button class="tool-card" onclick="console.log('Abrindo System')">
+            <div class="tool-icon">⚙️</div>
+            <div class="tool-label">System Health</div>
+          </button>
+          <button class="tool-card col-span-2" style="background: rgba(127,29,29,.12); border-color: rgba(248,113,113,.25);" onclick="console.log('Gerar Chave')">
+            <div class="tool-icon">🔑</div>
+            <div class="tool-label">Gerenciar Chaves (Key Mgmt)</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- AI Shortcuts -->
+      <div class="glass-panel p-4">
+        <h2 class="text-xs font-semibold uppercase tracking-wider muted mb-2">Atalhos do Cyber Copilot</h2>
+        <ul class="text-[11px] muted space-y-1.5 leading-relaxed">
+          <li class="flex items-center gap-2">• <span class="text-purple-300">"Analise as ameaças críticas atuais"</span></li>
+          <li class="flex items-center gap-2">• <span class="text-purple-300">"Resuma os últimos eventos"</span></li>
+          <li class="flex items-center gap-2">• <span class="text-purple-300">"Sugira ações de contenção"</span></li>
+          <li class="flex items-center gap-2">• <span class="text-purple-300">"Investigar IP 10.24.18.7"</span></li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Theme Toggle Logic
+    const themeSwitch = document.getElementById('theme-switch');
+    themeSwitch.addEventListener('click', () => {
+      document.body.classList.toggle('theme-light');
+      const isLight = document.body.classList.contains('theme-light');
+      themeSwitch.setAttribute('aria-checked', isLight);
+    });
+  </script>
 </body>
 </html>
